@@ -30,7 +30,21 @@ class _OddOneOutGameState extends State<OddOneOutGame> {
   List<int> _numbers = [];
   int _oddIndex = 0;
   int _score = 0;
-  final String _rule = "Multiples of 4";
+  String _rule = "";
+
+  final List<MathRule> _rules = [
+    MathRule("Multiples of 4", (n) => n % 4 == 0),
+    MathRule("Prime numbers", (n) {
+      if (n < 2) return false;
+      for (int i = 2; i <= n ~/ 2; i++) {
+        if (n % i == 0) return false;
+      }
+      return true;
+    }),
+    MathRule("Even numbers", (n) => n % 2 == 0),
+    MathRule("Odd numbers", (n) => n % 2 != 0),
+    MathRule("Multiples of 3", (n) => n % 3 == 0),
+  ];
 
   @override
   void initState() {
@@ -39,29 +53,31 @@ class _OddOneOutGameState extends State<OddOneOutGame> {
   }
 
   void _generateRound() {
-    Set<int> numsSet = {};
     _oddIndex = _rand.nextInt(3);
+    MathRule currentRule = _rules[_rand.nextInt(_rules.length)];
 
+    Set<int> numsSet = {};
     for (int i = 0; i < 3; i++) {
       if (i == _oddIndex) {
-        // Generate a non-multiple of 4 that isn't already in set
+        // Generate a number that does NOT match the rule and is unique
         int n;
         do {
           n = _rand.nextInt(50) + 1;
-        } while (n % 4 == 0 || numsSet.contains(n));
+        } while (currentRule.match(n) || numsSet.contains(n));
         numsSet.add(n);
       } else {
-        // Generate a multiple of 4 that isn't already in set
+        // Generate a number that matches the rule and is unique
         int n;
         do {
-          n = (_rand.nextInt(12) + 1) * 4;
-        } while (numsSet.contains(n));
+          n = _rand.nextInt(50) + 1;
+        } while (!currentRule.match(n) || numsSet.contains(n));
         numsSet.add(n);
       }
     }
 
     setState(() {
       _numbers = numsSet.toList();
+      _rule = currentRule.description;
     });
   }
 
@@ -103,4 +119,11 @@ class _OddOneOutGameState extends State<OddOneOutGame> {
       ),
     );
   }
+}
+
+class MathRule {
+  final String description;
+  final bool Function(int) match;
+
+  MathRule(this.description, this.match);
 }
