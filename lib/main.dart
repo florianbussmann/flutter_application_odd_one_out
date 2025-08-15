@@ -39,26 +39,29 @@ class _OddOneOutGameState extends State<OddOneOutGame> {
   }
 
   void _generateRound() {
-    List<int> nums = [];
+    Set<int> numsSet = {};
     _oddIndex = _rand.nextInt(3);
 
     for (int i = 0; i < 3; i++) {
       if (i == _oddIndex) {
-        // Not multiple of 4
+        // Generate a non-multiple of 4 that isn't already in set
         int n;
         do {
           n = _rand.nextInt(50) + 1;
-        } while (n % 4 == 0);
-        nums.add(n);
+        } while (n % 4 == 0 || numsSet.contains(n));
+        numsSet.add(n);
       } else {
-        // Multiple of 4
-        int n = (_rand.nextInt(12) + 1) * 4;
-        nums.add(n);
+        // Generate a multiple of 4 that isn't already in set
+        int n;
+        do {
+          n = (_rand.nextInt(12) + 1) * 4;
+        } while (numsSet.contains(n));
+        numsSet.add(n);
       }
     }
 
     setState(() {
-      _numbers = nums;
+      _numbers = numsSet.toList();
     });
   }
 
@@ -79,7 +82,10 @@ class _OddOneOutGameState extends State<OddOneOutGame> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_rule, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(
+              _rule,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 20),
             for (int i = 0; i < _numbers.length; i++)
               Padding(
